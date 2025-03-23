@@ -1,0 +1,75 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  cassandra:
+    image: cassandra:latest
+    environment:
+      - CASSANDRA_AUTHENTICATOR=AllowAllAuthenticator
+      - CASSANDRA_AUTHORIZER=AllowAllAuthorizer
+    ports:
+      - "9042:9042"
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  publisher:
+    build:
+      context: .
+    command: ["publisher.py"]
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=admin
+      - QUEUE_NAME=queue1
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  consumer1:
+    build:
+      context: .
+    command: ["consumer.py"]
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=admin
+      - QUEUE_NAME=queue1
+      - CASSANDRA_HOST=cassandra
+      - TABLE_NAME=messages1
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
+
+  consumer2:
+    build:
+      context: .
+    command: ["consumer.py"]
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=admin
+      - QUEUE_NAME=queue2
+      - CASSANDRA_HOST=cassandra
+      - TABLE_NAME=messages2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
