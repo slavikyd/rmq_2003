@@ -23,6 +23,7 @@ for i in range(10):
 else:
     raise Exception('Failed to connect to RabbitMQ after multiple attempts')
 
+
 def publish_messages():
     with open(INPUT_FILE, 'r') as file:
         for line in file:

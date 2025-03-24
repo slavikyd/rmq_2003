@@ -25,17 +25,14 @@ for _ in range(10):
 else:
     raise Exception('Failed to connect to RabbitMQ after multiple attempts')
 
+
 for i in range(10):
     try:
         cluster = Cluster([CASSANDRA_HOST])
         session = cluster.connect()
-
         session.execute(f"CREATE KEYSPACE IF NOT EXISTS {KEYSPACE} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': 1}}")
-
         session.set_keyspace(KEYSPACE)
-
         session.execute('CREATE TABLE IF NOT EXISTS messages (id UUID PRIMARY KEY, message TEXT)')
-
         print('Connected to Cassandra')
         break
     except NoHostAvailable:
@@ -43,6 +40,7 @@ for i in range(10):
         time.sleep(5)
 else:
     raise Exception('Failed to connect to Cassandra after multiple attempts')
+
 
 def callback(ch, method, properties, body):
     message = body.decode()
