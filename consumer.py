@@ -25,7 +25,7 @@ for _ in range(10):
 else:
     raise Exception('Failed to connect to RabbitMQ after multiple attempts')
 
-for _ in range(10):
+for i in range(10):
     try:
         cluster = Cluster([CASSANDRA_HOST])
         session = cluster.connect()
@@ -34,7 +34,7 @@ for _ in range(10):
 
         session.set_keyspace(KEYSPACE)
 
-        session.execute(f'CREATE TABLE IF NOT EXISTS messages (id UUID PRIMARY KEY, message TEXT)')
+        session.execute('CREATE TABLE IF NOT EXISTS messages (id UUID PRIMARY KEY, message TEXT)')
 
         print('Connected to Cassandra')
         break
@@ -49,7 +49,7 @@ def callback(ch, method, properties, body):
     print(f'Received: {message}')
     try:
         session.execute(
-            f'INSERT INTO messages (id, message) VALUES (uuid(), %s)',
+            'INSERT INTO messages (id, message) VALUES (uuid(), %s)',
             (message,)
         )
         print('Message saved to Cassandra')

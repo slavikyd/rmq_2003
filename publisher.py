@@ -9,7 +9,7 @@ INPUT_FILE = 'input.txt'
 QUEUE_NAME = os.getenv('QUEUE_NAME')
 
 
-for _ in range(10):
+for i in range(10):
     try:
         credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials))
